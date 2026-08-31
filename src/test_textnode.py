@@ -1,5 +1,5 @@
 import unittest
-from textnode import TextNode, TextType, text_node_to_html_node
+from textnode import TextNode, TextType, text_node_to_html_node, split_nodes_delimiter
 
 
 class TestTextNode(unittest.TestCase):
@@ -48,6 +48,99 @@ class TestTextNode(unittest.TestCase):
         html_node = text_node_to_html_node(node)
         expected = '<img src="test.jpg" alt="Image test"></img>'
         self.assertEqual(html_node.to_html(), expected)
+
+    def test_split_nodes_delimiter_bold(self):
+        old_nodes = [TextNode("This is text with a **bold** word", TextType.TEXT)]
+        new_nodes = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+        self.assertListEqual(
+            new_nodes,
+            [
+                TextNode("This is text with a ", TextType.TEXT),
+                TextNode("bold", TextType.BOLD),
+                TextNode(" word", TextType.TEXT),
+            ],
+        )
+
+    def test_split_nodes_delimiter_italic(self):
+        old_nodes = [TextNode("This is text with an _italic_ word", TextType.TEXT)]
+        new_nodes = split_nodes_delimiter(old_nodes, "_", TextType.ITALIC)
+        self.assertListEqual(
+            new_nodes,
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word", TextType.TEXT),
+            ],
+        )
+
+    def test_split_nodes_delimiter_code(self):
+        old_nodes = [TextNode("This is text with a `code block` word", TextType.TEXT)]
+        new_nodes = split_nodes_delimiter(old_nodes, "`", TextType.CODE)
+        self.assertListEqual(
+            new_nodes,
+            [
+                TextNode("This is text with a ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+                TextNode(" word", TextType.TEXT),
+            ],
+        )
+
+    def test_split_nodes_delimiter_unclosed(self):
+        old_nodes = [TextNode("unclosed **bold", TextType.TEXT)]
+        with self.assertRaises(ValueError):
+            _ = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+
+    def test_split_nodes_delimiter_non_text_passthrough(self):
+        old_nodes = [TextNode("already bold", TextType.BOLD)]
+        new_nodes = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+        self.assertListEqual(new_nodes, old_nodes)
+
+    def test_split_nodes_delimiter_at_edges(self):
+        old_nodes = [TextNode("**bold** word", TextType.TEXT)]
+        new_nodes = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+        self.assertListEqual(
+            new_nodes,
+            [
+                TextNode("bold", TextType.BOLD),
+                TextNode(" word", TextType.TEXT),
+            ],
+        )
+
+    def test_split_nodes_delimiter_multiple_pairs(self):
+        old_nodes = [TextNode("**one**and **two**", TextType.TEXT)]
+        new_nodes = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+        self.assertListEqual(
+            new_nodes,
+            [
+                TextNode("one", TextType.BOLD),
+                TextNode("and ", TextType.TEXT),
+                TextNode("two", TextType.BOLD),
+            ],
+        )
+
+    def test_split_nodes_delimiter_multiple_nodes(self):
+        old_nodes = [
+            TextNode("**one**", TextType.TEXT),
+            TextNode("plain", TextType.TEXT),
+            TextNode("**two**", TextType.TEXT),
+        ]
+        new_nodes = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+        self.assertListEqual(
+            new_nodes,
+            [
+                TextNode("one", TextType.BOLD),
+                TextNode("plain", TextType.TEXT),
+                TextNode("two", TextType.BOLD),
+            ],
+        )
+
+    def test_split_nodes_delimiter_no_delimiter(self):
+        old_nodes = [TextNode("no delimiter here", TextType.TEXT)]
+        new_nodes = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+        self.assertListEqual(
+            new_nodes,
+            [TextNode("no delimiter here", TextType.TEXT)],
+        )
 
 if __name__ == "__main__":
     unittest.main()

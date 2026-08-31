@@ -7,7 +7,7 @@ class ParentNode(HTMLNode):
     def to_html(self):
         if self.tag is None or not len(self.tag):
             raise ValueError("missing tag")
-        if not len(self.children):
+        if not self.children:
             raise ValueError("missing children")
         value = ""
         for child in self.children:
