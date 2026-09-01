@@ -57,7 +57,7 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             continue
         sections = old_node.text.split(delimiter)
         if len(sections) % 2 == 0:
-            raise ValueError("invalid markdown syntax")
+            raise ValueError("invalid markdown: formatted section not closed")
         for i, section in enumerate(sections):
             if section == "":
                 continue
