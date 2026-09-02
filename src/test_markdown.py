@@ -1,5 +1,5 @@
 import unittest
-from markdown import extract_markdown_images, extract_markdown_links
+from markdown import extract_markdown_images, extract_markdown_links, markdown_to_blocks
 
 
 class TestExtractMarkdownImages(unittest.TestCase):
@@ -79,6 +79,68 @@ class TestExtractMarkdownLinks(unittest.TestCase):
         matches = extract_markdown_links("This is an ![image](https://i.imgur.com/zjjcJKZ.png)")
         self.assertListEqual([], matches)
 
+class TestMarkdown(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_markdown_to_blocks_single(self):
+        blocks = markdown_to_blocks("Just one paragraph")
+        self.assertEqual(blocks, ["Just one paragraph"])
+
+    def test_markdown_to_blocks_leading_trailing_whitespace(self):
+        md = "\n\n  First paragraph  \n\nSecond paragraph\n\n  "
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First paragraph", "Second paragraph"])
+
+    def test_markdown_to_blocks_blank_lines_with_whitespace(self):
+        md = "First\n   \n\nSecond"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First", "Second"])
+
+    def test_markdown_to_blocks_multiple_blank_lines(self):
+        md = "First\n\n\n\nSecond"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First", "Second"])
+
+    def test_markdown_to_blocks_empty(self):
+        blocks = markdown_to_blocks("")
+        self.assertEqual(blocks, [])
+
+    def test_markdown_to_blocks_whitespace_only(self):
+        blocks = markdown_to_blocks("   \n\n  ")
+        self.assertEqual(blocks, [])
+
+    def test_markdown_to_blocks_blank_line_with_tabs(self):
+        md = "First\n\t\n\t\nSecond"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First", "Second"])
+
+    def test_markdown_to_blocks_no_trailing_newline(self):
+        md = "First\n\nSecond"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First", "Second"])
+
+    def test_markdown_to_blocks_whitespace_inside_block(self):
+        md = "First line\n   indented  \n\nSecond"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First line\n   indented", "Second"])
 
 if __name__ == "__main__":
     unittest.main()
