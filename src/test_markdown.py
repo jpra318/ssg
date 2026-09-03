@@ -1,5 +1,11 @@
 import unittest
-from markdown import extract_markdown_images, extract_markdown_links, markdown_to_blocks
+from markdown import (
+    BlockType,
+    block_to_block_type,
+    extract_markdown_images,
+    extract_markdown_links,
+    markdown_to_blocks,
+)
 
 
 class TestExtractMarkdownImages(unittest.TestCase):
@@ -141,6 +147,60 @@ This is the same paragraph on a new line
         md = "First line\n   indented  \n\nSecond"
         blocks = markdown_to_blocks(md)
         self.assertEqual(blocks, ["First line\n   indented", "Second"])
+
+class TestBlockToBlockType(unittest.TestCase):
+    def test_paragraph(self):
+        self.assertEqual(block_to_block_type("A paragraph of text"), BlockType.P)
+
+    def test_headings(self):
+        for level in range(1, 7):
+            block = f"{'#' * level} Heading"
+            with self.subTest(level=level):
+                self.assertEqual(block_to_block_type(block), BlockType.H)
+
+    def test_code_block(self):
+        block = "```\nprint('hello')\n```"
+        self.assertEqual(block_to_block_type(block), BlockType.C)
+
+    def test_code_block_with_language(self):
+        block = "```python\nprint('hello')\n```"
+        self.assertEqual(block_to_block_type(block), BlockType.C)
+
+    def test_unclosed_code_block_is_paragraph(self):
+        block = "```\nprint('hello')"
+        self.assertEqual(block_to_block_type(block), BlockType.P)
+
+    def test_quote_block(self):
+        block = "> first quote\n> second quote"
+        self.assertEqual(block_to_block_type(block), BlockType.Q)
+
+    def test_mixed_quote_block_is_paragraph(self):
+        block = "> first quote\nordinary text"
+        self.assertEqual(block_to_block_type(block), BlockType.P)
+
+    def test_unordered_list(self):
+        block = "- first item\n- second item"
+        self.assertEqual(block_to_block_type(block), BlockType.UL)
+
+    def test_mixed_unordered_list_is_paragraph(self):
+        block = "- first item\nordinary text"
+        self.assertEqual(block_to_block_type(block), BlockType.P)
+
+    def test_ordered_list(self):
+        block = "1. first item\n2. second item\n3. third item"
+        self.assertEqual(block_to_block_type(block), BlockType.OL)
+
+    def test_non_sequential_ordered_list_is_paragraph(self):
+        block = "1. first item\n3. second item"
+        self.assertEqual(block_to_block_type(block), BlockType.P)
+
+    def test_ordered_list_starting_at_non_one_is_paragraph(self):
+        block = "2. first item\n3. second item"
+        self.assertEqual(block_to_block_type(block), BlockType.P)
+
+    def test_empty_block_is_paragraph(self):
+        self.assertEqual(block_to_block_type(""), BlockType.P)
+
 
 if __name__ == "__main__":
     unittest.main()
