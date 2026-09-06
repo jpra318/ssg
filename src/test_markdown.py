@@ -2,10 +2,10 @@ import unittest
 from markdown import (
     BlockType,
     block_to_block_type,
-    extract_markdown_images,
-    extract_markdown_links,
     markdown_to_blocks,
+    markdown_to_html_node,
 )
+from textnode import extract_markdown_images, extract_markdown_links
 
 
 class TestExtractMarkdownImages(unittest.TestCase):
@@ -200,6 +200,43 @@ class TestBlockToBlockType(unittest.TestCase):
 
     def test_empty_block_is_paragraph(self):
         self.assertEqual(block_to_block_type(""), BlockType.P)
+
+
+class TestMarkdownToHTMLNode(unittest.TestCase):
+    def test_paragraph(self):
+        node = markdown_to_html_node("This is a paragraph")
+        self.assertEqual(node.to_html(), "<div><p>This is a paragraph</p></div>")
+
+    def test_headings(self):
+        for level in range(1, 7):
+            md = f"{'#' * level} Heading"
+            expected = f"<div><h{level}>Heading</h{level}></div>"
+            with self.subTest(level=level):
+                self.assertEqual(markdown_to_html_node(md).to_html(), expected)
+
+    def test_code(self):
+        node = markdown_to_html_node("```\ncode\n```")
+        self.assertEqual(node.to_html(), "<div><pre><code>code\n</code></pre></div>")
+
+    def test_quote(self):
+        node = markdown_to_html_node("> quote")
+        self.assertEqual(node.to_html(), "<div><blockquote>quote</blockquote></div>")
+
+    def test_unordered_list(self):
+        node = markdown_to_html_node("- one\n- two")
+        self.assertEqual(node.to_html(), "<div><ul><li>one</li><li>two</li></ul></div>")
+
+    def test_ordered_list(self):
+        node = markdown_to_html_node("1. one\n2. two")
+        self.assertEqual(node.to_html(), "<div><ol><li>one</li><li>two</li></ol></div>")
+
+    def test_multiple_blocks(self):
+        node = markdown_to_html_node("# Heading\n\nParagraph text")
+        self.assertEqual(node.to_html(), "<div><h1>Heading</h1><p>Paragraph text</p></div>")
+
+    def test_inline_formatting(self):
+        node = markdown_to_html_node("This is **bold** and _italic_")
+        self.assertEqual(node.to_html(), "<div><p>This is <b>bold</b> and <i>italic</i></p></div>")
 
 
 if __name__ == "__main__":

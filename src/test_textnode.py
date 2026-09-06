@@ -1,5 +1,6 @@
 import unittest
-from textnode import TextNode, TextType, text_node_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
+from textnode import TextNode, TextType, text_node_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes, text_to_children
+from leafnode import LeafNode
 
 
 class TestTextNode(unittest.TestCase):
@@ -391,6 +392,35 @@ class TestTextNode(unittest.TestCase):
     def test_text_to_textnodes_empty(self):
         nodes = text_to_textnodes("")
         self.assertListEqual(nodes, [])
+
+
+class TestTextToChildren(unittest.TestCase):
+    def test_plain_text(self):
+        children = text_to_children("plain text")
+        self.assertListEqual(children, [LeafNode(None, "plain text")])
+
+    def test_bold(self):
+        children = text_to_children("**bold**")
+        self.assertListEqual(children, [LeafNode("b", "bold")])
+
+    def test_mixed(self):
+        children = text_to_children("**bold** and _italic_")
+        self.assertListEqual(
+            children,
+            [
+                LeafNode("b", "bold"),
+                LeafNode(None, " and "),
+                LeafNode("i", "italic"),
+            ],
+        )
+
+    def test_link(self):
+        children = text_to_children("[link](https://boot.dev)")
+        self.assertListEqual(
+            children,
+            [LeafNode("a", "link", {"href": "https://boot.dev"})],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

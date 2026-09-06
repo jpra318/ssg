@@ -1,6 +1,7 @@
+import re
 from enum import Enum
 from leafnode import LeafNode
-from markdown import extract_markdown_images, extract_markdown_links
+from htmlnode import HTMLNode
 
 class TextType(Enum):
     TEXT = "text"
@@ -31,7 +32,7 @@ class TextNode:
         return f"TextNode({self.text}, {self.text_type.value}, {self.url})"
 
 def text_node_to_html_node(text_node: TextNode) -> LeafNode:
-    match(text_node.text_type):
+    match text_node.text_type:
         case TextType.TEXT:
             return LeafNode(None, text_node.text)
         case TextType.BOLD:
@@ -67,6 +68,12 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             else:
                 new_nodes.append(TextNode(section, text_type))
     return new_nodes
+
+def extract_markdown_images(text: str) -> list[tuple[str, str]]:
+    return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+def extract_markdown_links(text: str) -> list[tuple[str, str]]:
+    return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
 def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
     new_nodes = []
@@ -122,3 +129,9 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
     return nodes
+
+def text_to_children(text: str) -> list[HTMLNode]:
+    return [
+        text_node_to_html_node(textnode)
+        for textnode in text_to_textnodes(text)
+    ]
