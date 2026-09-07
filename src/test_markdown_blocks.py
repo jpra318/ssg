@@ -1,5 +1,5 @@
 import unittest
-from markdown import (
+from markdown_blocks import (
     BlockType,
     block_to_block_type,
     markdown_to_blocks,
