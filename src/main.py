@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 from gencontent import generate_page
 
@@ -18,23 +19,26 @@ def copy_static(src_dir: str, dest_dir: str) -> None:
             copy_static(src_path, dest_path)
 
 
-def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str) -> None:
+def generate_pages_recursive(basepath: str, dir_path_content: str, template_path: str, dest_dir_path: str) -> None:
     for entry in os.listdir(dir_path_content):
         src_path = os.path.join(dir_path_content, entry)
         if os.path.isfile(src_path) and src_path.endswith(".md"):
             dest_path = os.path.join(dest_dir_path, os.path.splitext(entry)[0] + ".html")
-            generate_page(src_path, template_path, dest_path)
+            generate_page(basepath, src_path, template_path, dest_path)
         elif os.path.isdir(src_path):
             new_dest = os.path.join(dest_dir_path, entry)
-            generate_pages_recursive(src_path, template_path, new_dest)
+            generate_pages_recursive(basepath, src_path, template_path, new_dest)
 
 
 def main():
+    basepath = "/"
+    if sys.argv[1]:
+        basepath = sys.argv[1]
     print("Copying static files...")
-    copy_static("static", "public")
+    copy_static("static", "docs")
     print("Static files copied.")
     print("Generating pages...")
-    generate_pages_recursive("content", "template.html", "public")
+    generate_pages_recursive(basepath, "content", "template.html", "docs")
     print("Pages generated.")
 
 
