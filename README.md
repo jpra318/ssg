@@ -28,6 +28,7 @@ The project uses only the Python standard library.
 ├── content/          # Markdown source files
 ├── static/           # Static assets such as CSS and images
 ├── docs/             # Generated GitHub Pages output
+├── preview/          # Local preview output (ignored by Git)
 ├── template.html     # HTML page template
 ├── src/
 │   ├── markdown_blocks.py  # Block parsing and block-to-HTML conversion
@@ -50,17 +51,17 @@ The test suite covers Markdown parsing, HTML node generation, page generation, s
 
 ## Build the Site
 
-To generate the site into `docs/`:
+To generate the deployment site into `docs/`:
 
 ```bash
 ./build.sh
 ```
 
-The build script uses `/ssg/` as the deployment base path for the GitHub Pages project site. Generated HTML pages and copied static assets are written to `docs/`.
+The build script uses `/ssg/` as the deployment base path for the GitHub Pages project site. Generated HTML pages and copied static assets are written to the tracked `docs/` directory.
 
 ## Preview Locally
 
-To generate the site and start a local server:
+To generate the site into the ignored `preview/` directory and start a local server:
 
 ```bash
 ./main.sh
@@ -68,11 +69,11 @@ To generate the site and start a local server:
 
 Then open [http://localhost:8888](http://localhost:8888).
 
-The local script uses `/` as the base path, while `build.sh` uses `/ssg/` for deployment under the GitHub Pages project path.
+The local script uses `/` as the base path and writes to `preview/`, while `build.sh` uses `/ssg/` and writes to `docs/` for deployment. This prevents local previews from overwriting deployment-ready files.
 
 ## Adding Content
 
-Add Markdown files under `content/`. Nested directories are mirrored into `docs/`.
+Add Markdown files under `content/`. Nested directories are mirrored into the selected output directory (`preview/` locally or `docs/` for deployment).
 
 For example:
 
