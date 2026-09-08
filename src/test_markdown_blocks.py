@@ -1,4 +1,5 @@
 import unittest
+
 from markdown_blocks import (
     BlockType,
     block_to_block_type,

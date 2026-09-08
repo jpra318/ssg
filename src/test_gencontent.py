@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+
 from gencontent import extract_title, generate_page
 
 
@@ -40,7 +41,7 @@ class TestGeneratePage(unittest.TestCase):
             with open(template_path, "w") as f:
                 f.write("{{ Title }}|{{ Content }}")
 
-            generate_page(md_path, template_path, dest_path)
+            generate_page("/", md_path, template_path, dest_path)
 
             with open(dest_path) as f:
                 result = f.read()
@@ -59,7 +60,7 @@ class TestGeneratePage(unittest.TestCase):
             with open(template_path, "w") as f:
                 f.write("{{ Title }}|{{ Content }}")
 
-            generate_page(md_path, template_path, dest_path)
+            generate_page("/", md_path, template_path, dest_path)
 
             self.assertTrue(os.path.isfile(dest_path))
             with open(dest_path) as f:

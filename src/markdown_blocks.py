@@ -1,12 +1,14 @@
 import re
 from enum import Enum
+
+from parentnode import ParentNode
 from textnode import (
     TextNode,
     TextType,
     text_node_to_html_node,
     text_to_children,
 )
-from parentnode import ParentNode
+
 
 class BlockType(Enum):
     P = "paragraph"
@@ -79,9 +81,7 @@ def markdown_to_html_node(markdown: str) -> ParentNode:
             case BlockType.Q:
                 lines = block.splitlines()
                 for i in range(len(lines)):
-                    lines[i] = lines[i][1:]
-                    if lines[i].startswith(" "):
-                        lines[i] = lines[i][1:]
+                    lines[i] = lines[i][1:].removeprefix(" ")
                 text = " ".join(lines)
                 children = text_to_children(text)
                 block_nodes.append(ParentNode("blockquote", children))

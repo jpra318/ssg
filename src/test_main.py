@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+
 from main import copy_static, generate_pages_recursive
 
 
@@ -27,7 +28,7 @@ class TestGeneratePagesRecursive(unittest.TestCase):
             with open(os.path.join(content_dir, "notes.txt"), "w") as f:
                 f.write("not markdown")
 
-            generate_pages_recursive(content_dir, template_path, dest_dir)
+            generate_pages_recursive("/", content_dir, template_path, dest_dir)
 
             # Top-level markdown becomes an HTML page.
             self.assertTrue(os.path.isfile(os.path.join(dest_dir, "index.html")))
